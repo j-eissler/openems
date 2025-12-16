@@ -135,7 +135,9 @@ public class Edge2EdgeEssImpl extends AbstractEdge2Edge implements ManagedSymmet
 				+ "|L:" + this.getActivePower().asString() //
 				+ "|Allowed:" + this.getAllowedChargePower().asStringWithoutUnit() + ";" //
 				+ this.getAllowedDischargePower().asString() //
-				+ "|" + this.getGridModeChannel().value().asOptionString();
+				+ "|" + this.getGridModeChannel().value().asOptionString()
+				+ "|" + this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT32).value().asString()
+				+ "|" + this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT64).value().asString();
 	}
 
 	@Override

@@ -12,6 +12,7 @@ import static io.openems.edge.ess.power.api.Relationship.EQUALS;
 import static io.openems.edge.ess.power.api.Relationship.GREATER_OR_EQUALS;
 import static io.openems.edge.ess.power.api.Relationship.LESS_OR_EQUALS;
 
+import io.openems.common.types.OpenemsType;
 import org.osgi.annotation.versioning.ProviderType;
 
 import io.openems.common.channel.AccessMode;
@@ -223,7 +224,12 @@ public interface ManagedSymmetricEss extends SymmetricEss {
 		 */
 		APPLY_POWER_FAILED(Doc.of(Level.WARNING)//
 				.persistencePriority(HIGH)//
-				.text("Applying the Active/Reactive Power failed"));
+				.text("Applying the Active/Reactive Power failed")),
+
+		DEBUG_UINT32(Doc.of(OpenemsType.LONG)
+				.persistencePriority(HIGH)),
+		DEBUG_UINT64(Doc.of(OpenemsType.LONG)
+				.persistencePriority(HIGH));
 
 		private final Doc doc;
 
@@ -256,6 +262,8 @@ public interface ManagedSymmetricEss extends SymmetricEss {
 				.channel(10, ChannelId.SET_REACTIVE_POWER_LESS_OR_EQUALS, ModbusType.FLOAT32) //
 				.channel(12, ChannelId.SET_ACTIVE_POWER_GREATER_OR_EQUALS, ModbusType.FLOAT32) //
 				.channel(14, ChannelId.SET_REACTIVE_POWER_GREATER_OR_EQUALS, ModbusType.FLOAT32) //
+				.channel(16, ChannelId.DEBUG_UINT32, ModbusType.UINT32) //
+				.channel(18, ChannelId.DEBUG_UINT64, ModbusType.UINT64) //
 				.build();
 	}
 

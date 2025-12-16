@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 
+import io.openems.common.timedata.Timeout;
+import io.openems.common.websocket.AbstractWebsocketServer;
+import io.openems.edge.common.modbusslave.*;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -26,9 +29,6 @@ import io.openems.common.exceptions.OpenemsException;
 import io.openems.edge.common.component.AbstractOpenemsComponent;
 import io.openems.edge.common.component.ComponentManager;
 import io.openems.edge.common.component.OpenemsComponent;
-import io.openems.edge.common.modbusslave.ModbusSlave;
-import io.openems.edge.common.modbusslave.ModbusSlaveNatureTable;
-import io.openems.edge.common.modbusslave.ModbusSlaveTable;
 import io.openems.edge.common.startstop.StartStop;
 import io.openems.edge.common.startstop.StartStoppable;
 import io.openems.edge.ess.api.ManagedSymmetricEss;
@@ -37,6 +37,8 @@ import io.openems.edge.ess.power.api.Power;
 import io.openems.edge.timedata.api.Timedata;
 import io.openems.edge.timedata.api.TimedataProvider;
 import io.openems.edge.timedata.api.utils.CalculateEnergyFromPower;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Designate(ocd = Config.class, factory = true)
 @Component(//
@@ -70,6 +72,11 @@ public class SimulatorEssSymmetricReactingImpl extends AbstractOpenemsComponent
 	private long energy = 0;
 	private Config config;
 
+	// For debugging INT values
+	private final Logger log = LoggerFactory.getLogger(SimulatorEssSymmetricReactingImpl.class);
+	private boolean showDebugValues = true;
+	private Timeout timeout = Timeout.ofSeconds(10);
+
 	public SimulatorEssSymmetricReactingImpl() {
 		super(//
 				OpenemsComponent.ChannelId.values(), //
@@ -93,6 +100,9 @@ public class SimulatorEssSymmetricReactingImpl extends AbstractOpenemsComponent
 		this._setAllowedDischargePower(config.maxDischargePower());
 		this._setGridMode(config.gridMode());
 		this._setCapacity(config.capacity());
+
+		this.timeout.start(this.componentManager.getClock());
+		this.logInfo(this.log, "Timeout started");
 	}
 
 	@Override
@@ -108,7 +118,19 @@ public class SimulatorEssSymmetricReactingImpl extends AbstractOpenemsComponent
 		}
 		switch (event.getTopic()) {
 		case TOPIC_CYCLE_AFTER_PROCESS_IMAGE //
-			-> this.calculateEnergy();
+			-> {
+			this.calculateEnergy();
+
+			// Set Debug INT channels
+			if(this.timeout.elapsed(this.componentManager.getClock())) {
+				this.logInfo(this.log, "Timeout elapsed. Show DebugValue is " + this.showDebugValues + " Setting channel values. ");
+				this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT32).setNextValue(this.showDebugValues ? ModbusRecordUint32.UNDEFINED_VALUE : 2);
+                this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT64).setNextValue(this.showDebugValues? ModbusRecordUint64.UNDEFINED_VALUE : 8);
+				this.showDebugValues = !this.showDebugValues;
+                this.timeout.start(this.componentManager.getClock());
+				this.logInfo(this.log, "New Timeout started");
+			}
+		}
 		}
 	}
 
@@ -117,7 +139,9 @@ public class SimulatorEssSymmetricReactingImpl extends AbstractOpenemsComponent
 		return "SoC:" + this.getSoc().asString() //
 				+ "|L:" + this.getActivePower().asString() //
 				+ "|Allowed:" + this.getAllowedChargePower().asStringWithoutUnit() + ";"
-				+ this.getAllowedDischargePower().asString();
+				+ this.getAllowedDischargePower().asString()
+				+ "|" + this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT32).value().asString()
+				+ "|" + this.channel(ManagedSymmetricEss.ChannelId.DEBUG_UINT64).value().asString();
 	}
 
 	@Override
