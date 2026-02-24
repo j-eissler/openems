@@ -14,6 +14,8 @@ import { LayoutRefreshService } from "./shared/service/layoutRefreshService";
 import { RouteService } from "./shared/service/route.service";
 import { Service, UserPermission, Websocket } from "./shared/shared";
 import { Language } from "./shared/type/language";
+import { Role } from "./shared/type/role";
+import { JsonrpcTestPermission } from "./edge/settings/jsonrpctest/jsonrpctest.permission";
 
 @Component({
     selector: "app-root",
@@ -26,7 +28,12 @@ export class AppComponent implements OnInit, OnDestroy {
     public backUrl: string | boolean = "/";
     public enableSideMenu: boolean;
     public isSystemLogEnabled: boolean = false;
+    public isAtLeastOwner: boolean = false;
+    public isAtLeastInstaller: boolean = false;
+    public isAtLeastAdmin: boolean = false;
+    public canSeeJsonrpcTest: boolean = false;
 
+    protected isEdgeBackend: boolean = environment.backend === "OpenEMS Edge";
     protected isUserAllowedToSeeOverview: boolean = false;
     protected isUserAllowedToSeeFooter: boolean = false;
     protected isHistoryDetailView: boolean = false;
@@ -119,5 +126,13 @@ export class AppComponent implements OnInit, OnDestroy {
         });
 
         this.title.setTitle(environment.edgeShortName);
+
+        this.service.getCurrentEdge().then(edge => {
+            const user = this.service.metadata?.value?.user;
+            this.isAtLeastOwner = edge.roleIsAtLeast(Role.OWNER);
+            this.isAtLeastInstaller = edge.roleIsAtLeast(Role.INSTALLER);
+            this.isAtLeastAdmin = edge.roleIsAtLeast(Role.ADMIN);
+            this.canSeeJsonrpcTest = JsonrpcTestPermission.canSee(user, edge);
+        });
     }
 }
