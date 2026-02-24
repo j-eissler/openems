@@ -83,7 +83,7 @@
       @if ((service.metadata | async)?.user; as user) {
       <ion-item tabindex="0" button routerLinkActive="active" (keydown.enter)="navigateToUser()"
         (click)="navigateToUser()">
-          <ion-icon style="margin-right: 5%" size="large" color="primary" slot="start" name="person-outline">
+        <ion-icon style="margin-right: 5%" size="large" color="primary" slot="start" name="person-outline">
         </ion-icon>
         <ion-label>
           <p style="color:var(--ion-text-color); font-weight: bold;">
@@ -101,7 +101,7 @@
       <!-- Show Link to Overview if more than one Edge is accessible or the globalRole is at least installer -->
       @if ((service.metadata | async); as service) {
       @if (isUserAllowedToSeeOverview) {
-      <ion-item lines="full" routerLinkActive="active" routerLink="/overview" (click)="menu.close()">
+      <ion-item routerLinkActive="active" routerLink="/overview" (click)="menu.close()">
         <ion-icon slot="start" color="primary" name="albums-outline"></ion-icon>
         <ion-label>{{"MENU.OVERVIEW" | translate}}</ion-label>
       </ion-item>
@@ -110,73 +110,84 @@
 
       @if (service.currentEdge(); as edge) {
       <nav>
+        <ion-item routerLink="/device/{{ edge.id }}/live" (click)="menu.close()">
+          <ion-icon slot="start" color="primary" name="grid-outline"></ion-icon>
+          <ion-label>{{ "GENERAL.LIVE" | translate }}</ion-label>
+        </ion-item>
+        <ion-item routerLink="/device/{{ edge.id }}/history" (click)="menu.close()">
+          <ion-icon slot="start" color="primary" name="bar-chart-outline"></ion-icon>
+          <ion-label>{{ "GENERAL.HISTORY" | translate }}</ion-label>
+        </ion-item>
+
         @if (isAtLeastOwner) {
-        <ion-item-group>
-          <ion-item-divider>
-            <ion-label>{{ "MENU.EDGE_SETTINGS" | translate }}</ion-label>
-          </ion-item-divider>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/profile" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="today-outline"></ion-icon>
-            <ion-label>{{ "EDGE.CONFIG.INDEX.SYSTEM_PROFILE" | translate }}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/systemlog" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="list-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.LOG" | translate}}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/network" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="globe-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.NETWORK_CONFIGURATION" | translate}}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/app" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="add-outline"></ion-icon>
-            <ion-label>{{ 'EDGE.CONFIG.APP.NAME_WITH_EDGE_NAME' | translate:
-              {edgeShortName: environment.edgeShortName} }}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/system" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="hardware-chip-outline"></ion-icon>
-            <ion-label>{{ environment.edgeShortName }} System</ion-label>
-          </ion-item>
-          @if (!isEdgeBackend) {
-          <ion-item routerLink="/device/{{ edge.id }}/settings/alerting" (click)="menu.close()">
-            <ion-icon slot="start" size="" color="primary" name="notifications-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.ALERTING" | translate}}</ion-label>
-          </ion-item>
-          }
-        </ion-item-group>
-        @if (isAtLeastAdmin) {
-        <ion-item-group>
-          <ion-item-divider>
-            <ion-label>{{"GENERAL.VISIBLE_FOR_ADMINS_ONLY" | translate}}</ion-label>
-          </ion-item-divider>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/component.update" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="toggle-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.ADJUST_COMPONENTS" | translate}}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/component.install" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="add-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.ADD_COMPONENTS" | translate}}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/channels" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="eye-outline"></ion-icon>
-            <!-- TODO translate -->
-            <ion-label>Channels</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/systemexecute" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="play-outline"></ion-icon>
-            <ion-label>{{"EDGE.CONFIG.INDEX.SYSTEM_EXECUTE" | translate}}</ion-label>
-          </ion-item>
-          <ion-item routerLink="/device/{{ edge.id }}/settings/powerAssistant" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="construct-outline"></ion-icon>
-            <ion-label>Power Assistant</ion-label>
-          </ion-item>
-          @if (canSeeJsonrpcTest) {
-          <ion-item routerLink="/device/{{ edge.id }}/settings/jsonrpctest" (click)="menu.close()">
-            <ion-icon slot="start" size="" class="normal-icon" name="eye-outline"></ion-icon>
-            <ion-label>Jsonrpc test</ion-label>
-          </ion-item>
-          }
-        </ion-item-group>
-        }
+        <ion-accordion-group>
+          <ion-accordion value="settings">
+            <ion-item slot="header">
+              <ion-icon slot="start" color="primary" name="settings-outline"></ion-icon>
+              <ion-label>{{ "MENU.EDGE_SETTINGS" | translate }}</ion-label>
+            </ion-item>
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/profile" (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="today-outline"></ion-icon>
+              <ion-label>{{ "EDGE.CONFIG.INDEX.SYSTEM_PROFILE" | translate }}</ion-label>
+            </ion-item>
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/systemlog" (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="list-outline"></ion-icon>
+              <ion-label>{{"EDGE.CONFIG.INDEX.LOG" | translate}}</ion-label>
+            </ion-item>
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/network"
+              (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="globe-outline"></ion-icon>
+              <ion-label>{{"EDGE.CONFIG.INDEX.NETWORK_CONFIGURATION" | translate}}</ion-label>
+            </ion-item>
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/app" (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="add-outline"></ion-icon>
+              <ion-label>{{ 'EDGE.CONFIG.APP.NAME_WITH_EDGE_NAME' | translate:
+                {edgeShortName: environment.edgeShortName} }}</ion-label>
+            </ion-item>
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/system" (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="hardware-chip-outline"></ion-icon>
+              <ion-label>{{ environment.edgeShortName }} System</ion-label>
+            </ion-item>
+            @if (!isEdgeBackend) {
+            <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/alerting" (click)="menu.close()">
+              <ion-icon slot="start" size="" color="primary" name="notifications-outline"></ion-icon>
+              <ion-label>{{"EDGE.CONFIG.INDEX.ALERTING" | translate}}</ion-label>
+            </ion-item>
+            }
+            @if (isAtLeastAdmin) {
+              <ion-item-divider>
+                <ion-label>{{"GENERAL.VISIBLE_FOR_ADMINS_ONLY" | translate}}</ion-label>
+              </ion-item-divider>
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/component.update" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="toggle-outline"></ion-icon>
+                <ion-label>{{"EDGE.CONFIG.INDEX.ADJUST_COMPONENTS" | translate}}</ion-label>
+              </ion-item>
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/component.install" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="add-outline"></ion-icon>
+                <ion-label>{{"EDGE.CONFIG.INDEX.ADD_COMPONENTS" | translate}}</ion-label>
+              </ion-item>
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/channels" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="eye-outline"></ion-icon>
+                <!-- TODO translate -->
+                <ion-label>Channels</ion-label>
+              </ion-item>
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/systemexecute" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="play-outline"></ion-icon>
+                <ion-label>{{"EDGE.CONFIG.INDEX.SYSTEM_EXECUTE" | translate}}</ion-label>
+              </ion-item>
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/powerAssistant" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="construct-outline"></ion-icon>
+                <ion-label>Power Assistant</ion-label>
+              </ion-item>
+              @if (canSeeJsonrpcTest) {
+              <ion-item slot="content" routerLink="/device/{{ edge.id }}/settings/jsonrpctest" (click)="menu.close()">
+                <ion-icon slot="start" size="" class="normal-icon" name="eye-outline"></ion-icon>
+                <ion-label>Jsonrpc test</ion-label>
+              </ion-item>
+              }
+            }
+          </ion-accordion>
+        </ion-accordion-group>
         }
       </nav>
       }
